@@ -21,7 +21,7 @@ Cyan = "\33[0;36m"  #Return
 
 # =================================================================================
 # See reason below -- why verify=False param is used
-# python3 onboardTetration.py --url https://asean-tetration.cisco.com/ --credential jonathan_api_credentials.json
+# python3 onboardTetration.py --url https://192.168.30.4/ --credential dmz_api_credentials.json
 # feedback: Le Anh Duc - anhdle@cisco.com
 # =================================================================================
 

@@ -21,7 +21,7 @@ $ pip3 install -r requirements.txt
 ```
 
 ## Screenshots
-![Example screenshot](https://github.com/leeahnduk/TetSetup/blob/master/tetsetup.jpg)
+![Example screenshot](https://github.com/leeahnduk/TetSetup/blob/master/TetSetup.jpg)
 
 ## UserGuide
 How to use this application:
@@ -36,7 +36,7 @@ To access to the cluster you need to get the API Credentials with the following 
 Download the api_credentials.json locally and have it ready to get the information required for the setup.
 
 A quick look for the help will list the current available options.
-To start the script, just use: `python3 onboard.py --url https://tet-cluster-ip --credential api_credentials.json`
+To start the script, just use: `python3 onboardTetration.py --url https://tet-cluster-ip --credential api_credentials.json`
 
 ## Files
 Need to have sample annotation file to upload to Tetration. The sample csv file is in the github folder.
@@ -46,7 +46,7 @@ Need to have sample annotation file to upload to Tetration. The sample csv file 
 
 Step 1: Issue `$ pip3 install -r requirements.txt` to install all required packages.
 
-Step 2: Run the apps: `python3 onboard.py --url https://tet-cluster-ip --credential api_credentials.json`
+Step 2: Run the apps: `python3 onboardTetration.py --url https://tet-cluster-ip --credential api_credentials.json`
 
 Step 3: Answer all the questions to finish setting up the cluster.
 is the sensors detail: 
