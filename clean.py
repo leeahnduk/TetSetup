@@ -266,12 +266,12 @@ def main():
     Main execution routine
     """
     rc = CreateRestClient()
-    print(CGREEN +"\nStarting clean up process")
+    print(CGREEN +"\nStarting clean up process"+ CEND)
     vrfs = GetVRFs(rc)
     RootScopesList = GetRootScope(vrfs)
-    print (Cyan + "\nHere are the names and VRF ID of all the root scopes in your cluster: ")
+    print (Cyan + "\nHere are the names and VRF ID of all the root scopes in your cluster: "+ CEND)
     print (*RootScopesList, sep ="\n")
-    root_scope_name = input (CGREEN + "\nWhich Root Scope above you want to clean up the config: ")
+    root_scope_name = input (CGREEN + "\nWhich Root Scope above you want to clean up the config: "+ CEND)
     clean(rc, root_scope_name)
 
 

@@ -6,6 +6,8 @@ import requests.packages.urllib3
 from argparse import ArgumentParser
 from collections import defaultdict
 from datetime import datetime
+import time
+from time import sleep
 import sys
 
 from tetpyclient import RestClient
@@ -18,6 +20,7 @@ CYELLOW = "\33[33m" #Request Input
 CRED = "\33[31m"    #Error
 URED = "\33[4;31m" 
 Cyan = "\33[0;36m"  #Return
+BLINK = "\33[5m"
 
 # =================================================================================
 # See reason below -- why verify=False param is used
@@ -193,7 +196,7 @@ def build_subscope(rc):
     root_scope_id = GetAppScopeId(scopes,root_scope)
     sub_scope = input("Name of the sub scope under Root Scope " + root_scope + " you want to create: ")
     subnet = input("Which subnet or IP you want your query is (X.X.X.X/Y): ")
-    print("Building sub scope: "+CYELLOW+sub_scope+ " under Root Scope " +CYELLOW+root_scope)
+    print("Building sub scope: "+CYELLOW+sub_scope+ " under Root Scope " +CYELLOW+root_scope+ CEND)
     
     # Now build the sub scope
     req_payload = {
@@ -210,7 +213,7 @@ def build_subscope(rc):
     parsed_resp = json.loads(resp.content)
     if resp.status_code == 200:
         sub_scope_id = str(parsed_resp["id"])
-        print("Sub scope: "+CYELLOW+sub_scope+ "with scope ID " +CYELLOW+sub_scope_id +" has been created")
+        print("Sub scope: "+CYELLOW+sub_scope+ "with scope ID " +CYELLOW+sub_scope_id +" has been created"+ CEND)
     else:
         print("Error occured during sub scope creation")
         print("Error code: "+str(resp.status_code))
@@ -225,9 +228,9 @@ def commit_scopes(rc):
     scopes = GetApplicationScopes(rc)
     vrfs = GetVRFs(rc)
     RootScopesList = GetRootScope(vrfs)
-    print (Cyan + "\nHere are the names and VRF ID of all the root scopes in your cluster: ")
+    print (Cyan + "\nHere are the names and VRF ID of all the root scopes in your cluster: "+ CEND)
     print (*RootScopesList, sep ="\n")
-    scope = input (CGREEN + "\nWhat is the Root scope you want to commit all the scope changes: ")
+    scope = input (CGREEN + "\nWhat is the Root scope you want to commit all the scope changes: "+ CEND)
     scope_id = GetAppScopeId(scopes,scope)
     
     # commit scope changes
@@ -251,9 +254,9 @@ def uploadAnnotation(rc):
     #Upload Annotation Tags to Tetration root Scope. Sample csv: need to have IP as anchor point, can add upto 32 annotations.
     vrfs = GetVRFs(rc)
     RootScopesList = GetRootScope(vrfs)
-    print (Cyan + "\nHere are the names and VRF ID of all the root scopes in your cluster: ")
+    print (Cyan + "\nHere are the names and VRF ID of all the root scopes in your cluster: " + CEND)
     print(*RootScopesList, sep="\n")
-    root_scope_name = input(CGREEN +"\nWhat is the root scope you want to upload annotations: ")
+    root_scope_name = input(CGREEN +"\nWhat is the root scope you want to upload annotations: "+ CEND)
     file_path = "sampleAnnotationUpload.csv"
     req_payload = [tetpyclient.MultiPartOption(key='X-Tetration-Oper', val='add')]
     resp= rc.upload(file_path, "/assets/cmdb/upload/" + root_scope_name, req_payload)
@@ -269,7 +272,7 @@ def getRoles(rc):
     resp = rc.get('/roles')
 
     if resp.status_code != 200:
-        print(URED + "Failed to retrieve inventories list")
+        print(URED + "Failed to retrieve inventories list"+ CEND)
         print(resp.status_code)
         print(resp.text)
     else:
@@ -297,21 +300,21 @@ def GetRoleId(roles, name):
 
 def CreateRole(rc):
     #Create new Role. Return Role name and ID
-    name = input (CGREEN + "\nKey in the name of the Role you want to create: ")
+    name = input (CGREEN + "\nKey in the name of the Role you want to create: "+ CEND)
     Roles = getRoles (rc)
     for role in Roles:
         if name == role["name"]:
-            print(URED + "\nRole {name} is conflict with existing Role filter. Please choose different name".format(name=name))
+            print(URED + "\nRole {name} is conflict with existing Role filter. Please choose different name".format(name=name)+ CEND)
         else:
             scopes = GetApplicationScopes(rc)
             vrfs = GetVRFs(rc)
             RootScopesList = GetRootScope(vrfs)
-            print (Cyan + "\nHere are the names and VRF ID of all the root scopes in your cluster: ")
+            print (Cyan + "\nHere are the names and VRF ID of all the root scopes in your cluster: "+ CEND)
             for elem in RootScopesList:
                 print (elem)
-            scope = input (CGREEN + "\nWhat is the Root scope you want your filter belong to: ")
+            scope = input (CGREEN + "\nWhat is the Root scope you want your filter belong to: "+ CEND)
             scope_id = GetAppScopeId(scopes,scope)
-            print(CGREEN + "\nBuilding Role: "+CYELLOW+name+ CGREEN + " under Scope " +CYELLOW+scope)
+            print(CGREEN + "\nBuilding Role: "+CYELLOW+name+ CGREEN + " under Scope " +CYELLOW+scope+ CEND)
             req_payload = {
             "app_scope_id": scope_id,
             "description": "Created by Python",
@@ -321,7 +324,7 @@ def CreateRole(rc):
             parsed_resp = json.loads(resp.content)
             if resp.status_code == 200:
                 Role_id = parsed_resp["id"]
-                print(Cyan + "\nRole: "+CYELLOW+name+ Cyan + " with Role ID: " + CYELLOW + Role_id + Cyan + " has been created")
+                print(Cyan + "\nRole: "+CYELLOW+name+ Cyan + " with Role ID: " + CYELLOW + Role_id + Cyan + " has been created"+ CEND)
             else:
                 print("Error occured during sub scope creation")
                 print("Error code: "+str(resp.status_code))
@@ -335,15 +338,15 @@ def role2Scope(rc):
     roles = getRoles(rc)
     scopes = GetApplicationScopes(rc)
     RolesList = GetRolesNamewithID(roles)
-    print (CGREEN + "\nHere is the list of Roles in Tetration cluster: " + Cyan)
+    print (CGREEN + "\nHere is the list of Roles in Tetration cluster: " + CEND)
     for elem in RolesList:
         print (elem)
-    role_name = input (CGREEN + "\nKey in the name of the Role you want to assign to scope: ")
+    role_name = input (CGREEN + "\nKey in the name of the Role you want to assign to scope: "+ CEND)
     role_id = GetRoleId(roles,role_name)
-    scope_name = input (CGREEN + "\nWhich scope (Root:Sub) you want to assign the Role to: ")
+    scope_name = input (CGREEN + "\nWhich scope (Root:Sub) you want to assign the Role to: "+ CEND)
     scope_id = GetAppScopeId (scopes,scope_name)
-    ability = input (CGREEN + "\nWhich ability (SCOPE_READ, SCOPE_WRITE, EXECUTE, ENFORCE, SCOPE_OWNER, DEVELOPER) you want to assign for this role: ")
-    print(CGREEN + "\nAssigning Role: "+CYELLOW+role_name+ CGREEN + " into Scope " +CYELLOW+scope_name)
+    ability = input (CGREEN + "\nWhich ability (SCOPE_READ, SCOPE_WRITE, EXECUTE, ENFORCE, SCOPE_OWNER, DEVELOPER) you want to assign for this role: "+ CEND)
+    print(CGREEN + "\nAssigning Role: "+CYELLOW+role_name+ CGREEN + " into Scope " +CYELLOW+scope_name+ CEND)
     req_payload = {
     "app_scope_id": scope_id,
     "ability": ability
@@ -351,7 +354,7 @@ def role2Scope(rc):
     resp = rc.post("/roles/" + role_id + "/capabilities", json_body=json.dumps(req_payload))
     parsed_resp = json.loads(resp.content)
     if resp.status_code == 200:
-        print(Cyan + "\nRole: "+CYELLOW+role_name+ Cyan + " with " +CYELLOW+ability+ Cyan+ " assigned to " + CYELLOW + scope_name + Cyan)
+        print(Cyan + "\nRole: "+CYELLOW+role_name+ Cyan + " with " +CYELLOW+ability+ Cyan+ " assigned to " + CYELLOW + scope_name)
     else:
         print("Error occured during assigning role to scope")
         print("Error code: "+str(resp.status_code))
@@ -365,7 +368,7 @@ def getUsers(rc):
     resp = rc.get('/users')
 
     if resp.status_code != 200:
-        print(CRED + "Failed to retrieve users list")
+        print(CRED + "Failed to retrieve users list"+ CEND)
         print(resp.status_code)
         print(resp.text)
     else:
@@ -374,25 +377,25 @@ def getUsers(rc):
 
 def CreateUser(rc):
     #Create new User and assign Role to this user. Return email and User_ID
-    email = input (CGREEN + "\nKey in the email of the User you want to create: ")
+    email = input (CGREEN + "\nKey in the email of the User you want to create: "+ CEND)
     Users = getUsers (rc)
     for User in Users:
         if email == User["email"]:
-            print(CRED + "\nUser with {email} is conflict with existing User filter. Please choose different email".format(email=email))
+            print(CRED + "\nUser with {email} is conflict with existing User filter. Please choose different email".format(email=email)+ CEND)
         else:
             scopes = GetApplicationScopes(rc)
-            scope_name = input (CGREEN + "\nWhat is the scope (Root:Sub) you want your user belong to: ")
+            scope_name = input (CGREEN + "\nWhat is the scope (Root:Sub) you want your user belong to: "+ CEND)
             scope_id = GetAppScopeId(scopes,scope_name)
-            first_name = input (CGREEN + "\nWhat is the firstname of your user: ")
-            last_name = input (CGREEN + "\nWhat is the lastname of your user: ")
+            first_name = input (CGREEN + "\nWhat is the firstname of your user: "+ CEND)
+            last_name = input (CGREEN + "\nWhat is the lastname of your user: "+ CEND)
             Roles = getRoles(rc)
             RolesList = GetRolesNamewithID(Roles)
-            print (CGREEN + "\nHere are the names and ID of all Roles in your cluster: ")
+            print (CGREEN + "\nHere are the names and ID of all Roles in your cluster: "+ CEND)
             for elem in RolesList:
                 print (elem)
-            role_name = input (CGREEN + "\nWhich role above you want your user has: ")
+            role_name = input (CGREEN + "\nWhich role above you want your user has: "+ CEND)
             role_id = GetRoleId(Roles, role_name)
-            print(CGREEN + "\nCreating User: "+CYELLOW+first_name+ CGREEN + " under Scope " +CYELLOW+scope_name+ CGREEN + " and Role " + CYELLOW+role_name)
+            print(CGREEN + "\nCreating User: "+CYELLOW+first_name+ CGREEN + " under Scope " +CYELLOW+scope_name+ CGREEN + " and Role " + CYELLOW+role_name+ CEND)
             req_payload = {
             "first_name": first_name,
             "last_name": last_name,
@@ -404,7 +407,7 @@ def CreateUser(rc):
             parsed_resp = json.loads(resp.content)
             if resp.status_code == 200:
                 User_id = parsed_resp["id"]
-                print(Cyan + "\nUser: "+CYELLOW+first_name+ Cyan + " with User ID: " + CYELLOW + User_id + Cyan + " has been created")
+                print(Cyan + "\nUser: "+CYELLOW+first_name+ Cyan + " with User ID: " + CYELLOW + User_id + Cyan + " has been created"+ CEND)
             else:
                 print("Error occured during user creation")
                 print("Error code: "+str(resp.status_code))
@@ -429,7 +432,7 @@ def GetProfilesId(Profiles, name):
     try:
         for prof in Profiles:
             if name == prof["name"]:
-                print (Cyan +"Here is your Profile ID: " + prof["id"])
+                print (Cyan +"Here is your Profile ID: " + prof["id"]+ CEND)
                 return prof["id"]
             else: continue
     except:
@@ -438,7 +441,7 @@ def GetProfilesId(Profiles, name):
 
 def Createprofile(rc):
     #Create new Agent config profile. Return Poofile name and ID
-    name = input (CYELLOW + "\nKey in the name of the Agent Config Profile you want to create: ")
+    name = input (CYELLOW + "\nKey in the name of the Agent Config Profile you want to create: "+ CEND)
     profiles = GetAgentProfiles (rc)
     for prof in profiles:
         if name == prof["name"]:
@@ -447,33 +450,33 @@ def Createprofile(rc):
             scopes = GetApplicationScopes(rc)
             vrfs = GetVRFs(rc)
             RootScopesList = GetRootScope(vrfs)
-            print (Cyan + "\nHere are the names and VRF ID of all the root scopes in your cluster: ")
+            print (Cyan + "\nHere are the names and VRF ID of all the root scopes in your cluster: "+ CEND)
             print(*RootScopesList, sep = "\n")
-            root_scope = input (CYELLOW + "\nWhich Root Scope above you want to get your orchestrator: ")
+            root_scope = input (CYELLOW + "\nWhich Root Scope above you want to get your orchestrator: "+ CEND)
             scope_id = GetAppScopeId(scopes,root_scope)
-            print (CGREEN + "Here is some config you need to define: ")
+            print (CGREEN + "Here is some config you need to define: "+ CEND)
             
-            auto_upgrade = input (CYELLOW + "Auto upgrade agents (y/n?): ")
+            auto_upgrade = input (CYELLOW + "Auto upgrade agents (y/n?): "+ CEND)
             if auto_upgrade == 'y': auto_upgrade = False
             else: auto_upgrade = True
             
-            pid_lookup = input (CYELLOW + "Allow Process ID Lookup (y/n?): ")
+            pid_lookup = input (CYELLOW + "Allow Process ID Lookup (y/n?): "+ CEND)
             if pid_lookup == 'y': pid_lookup = True
             else: pid_lookup = False
 
-            enforcement = input (CYELLOW + "Allow Agent enforcement - Host Based FW (y/n?): ")
+            enforcement = input (CYELLOW + "Allow Agent enforcement - Host Based FW (y/n?): "+ CEND)
             if enforcement == 'y': enforcement = False
             else: enforcement = True
 
-            forensics = input (CYELLOW + "Enable Secure Forensics Security Events for servers (y/n?): ")
+            forensics = input (CYELLOW + "Enable Secure Forensics Security Events for servers (y/n?): "+ CEND)
             if forensics == 'y': forensics = True
             else: forensics = False
 
-            meltdown = input (CYELLOW + "Enable Meltdown detection for servers (y/n?): ")
+            meltdown = input (CYELLOW + "Enable Meltdown detection for servers (y/n?): "+ CEND)
             if meltdown == 'y': meltdown = True
             else: meltdown = False
 
-            sidechannel = input (CYELLOW + "Enable SideChannel Attack detection for servers (y/n?): ")
+            sidechannel = input (CYELLOW + "Enable SideChannel Attack detection for servers (y/n?): "+ CEND)
             if sidechannel == 'y': sidechannel = True
             else: sidechannel = False
 
@@ -595,30 +598,52 @@ def remoteVRF(rc):
 
 def main():
     rc = CreateRestClient()
-    print(CGREEN +"\nHere are basic steps to fresh start Tetration:")
-    print(CGREEN +"\nStep 1: Creating new Tenant and Root Scope:")
+    print(CGREEN +"\nHere are basic steps to fresh start Tetration:"+ CEND)
+    print(CGREEN +"\nStep 1: Creating new Tenant and Root Scope:"+ CEND)
     build_root(rc)
-    print(CGREEN +"\nStep 2: Creating subscopes: ")
-    print(CGREEN +"\nStep 2a: Build Sub Scope")
+    print(CGREEN + BLINK + "\nCreating New tenant and root Scope..."+ CEND)
+    time.sleep(1)
+    print(CGREEN +"\nStep 2: Creating subscopes: "+ CEND)
+    print(CGREEN +"\nStep 2a: Build Sub Scope"+ CEND)
     build_subscope(rc)
-    print(CGREEN +"\nStep 2b: Commit scope changes")
+    print(CGREEN + BLINK + "\nBuilding sub scope ..."+ CEND)
+    time.sleep(1)
+    print(CGREEN +"\nStep 2b: Commit scope changes"+ CEND)
     commit_scopes(rc)
-    print(CGREEN +"\nStep 3: Upload annotation for inventories tagging: ")
-    uploadAnnotation(rc)
-    print(CGREEN +"\nStep 4: Create Agent Config Profile: ")
-    print(CGREEN +"\nStep 4a: Create Agent Profile:")
+    print(CGREEN + BLINK + "\nApplying Scope Changes ..."+ CEND)
+    time.sleep(1)
+    print(CGREEN +"\nStep 3: Upload annotation for inventories tagging completed! "+ CEND)
+    #uploadAnnotation(rc)
+    print(CGREEN + BLINK + "\nUploading annotation ..."+ CEND)
+    time.sleep(1)
+    print(CGREEN +"\nStep 4: Create Agent Config Profile: "+ CEND)
+    print(CGREEN +"\nStep 4a: Create Agent Profile:"+ CEND)
     profile_id = Createprofile (rc)[1]
-    print(CGREEN +"\nStep 4b: Create Agent Config Intent - Applying Agent Profile to Scope/Filter")
+    print(CGREEN + BLINK + "\nCreating Agent Profile ..."+ CEND)
+    time.sleep(1)
+    print(CGREEN +"\nStep 4b: Create Agent Config Intent - Applying Agent Profile to Scope/Filter"+ CEND)
     ApplyProfile2Filter (rc, profile_id)
-    print(CGREEN +"\nStep 4c: Move telemetry to Tenant VRF")
+    print(CGREEN + BLINK + "\nApplying Agent Profile to Scope ..."+ CEND)
+    time.sleep(1)
+    print(CGREEN +"\nStep 4c: Move telemetry to Tenant VRF"+ CEND)
     remoteVRF(rc)
-    print(CGREEN +"\nStep 5: Create Role for your scopes: ")
-    print(CGREEN +"\nStep 5a: Create Role")
+    print(CGREEN + BLINK + "\nMoving telemetry to Tenant VRF ..."+ CEND)
+    time.sleep(1)
+    print(CGREEN +"\nStep 5: Create Role for your scopes: "+ CEND)
+    print(CGREEN +"\nStep 5a: Create Role"+ CEND)
     CreateRole (rc)
-    print(CGREEN +"\nStep 5b: Apply Role to Scope")
+    print(CGREEN + BLINK + "\nCreating Role ..."+ CEND)
+    time.sleep(1)
+    print(CGREEN +"\nStep 5b: Apply Role to Scope"+ CEND)
     role2Scope(rc)
-    print(CGREEN +"\nStep 6: Create User for your scopes: ")
+    print(CGREEN + BLINK + "\nApplying Role to Scope ..."+ CEND)
+    time.sleep(1)
+    print(CGREEN +"\nStep 6: Create User for your scopes (option): "+ CEND)
     CreateUser (rc)
+    print(CGREEN + BLINK + "\nCreating New User for your scopes ..."+ CEND)
+    time.sleep(1)
+    print(Cyan +"\nCongratulation!!! You finished onboarding basic Tetration cluster "+ CEND)
+    
 
 if __name__ == "__main__":
     main()
